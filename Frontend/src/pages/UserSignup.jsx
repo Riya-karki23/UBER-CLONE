@@ -1,17 +1,23 @@
-import React, { useState } from "react";
+import React, { useState,useContext } from "react";
 import { Link } from "react-router-dom";
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
+import { UserDataContext } from "../context/UserContext";
 
 function UserSignup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
- const [userData,setUserData]=useState({});
 
 
-  const submitHandler=(e)=>{
+  const navigate=useNavigate();
+
+  const {user,setUser}=useContext(UserDataContext);
+
+  const submitHandler=async (e)=>{
     e.preventDefault();
-    setUserData({
+   const newUser=({
         fullname:{
             firstname:firstname,
             lastname:lastname,
@@ -19,6 +25,19 @@ function UserSignup() {
         email:email,
         password:password
     })
+
+    const response=await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`,newUser)
+    
+    if(response.status===201){
+        const data=response.data;
+
+        setUser(data.user);
+        localStorage.setItem('token',data.token);
+
+        navigate('/home');
+
+    }
+
 
     setEmail('');
     setPassword('');
@@ -78,7 +97,7 @@ function UserSignup() {
             placeholder="password"
           />
           <button className=" mt-7 font-bold w-full py-2 rounded  bg-black text-white">
-            SignUp
+            Create account
           </button>
         </form>
         <h2 className="flex justify-center items-center my-3">
