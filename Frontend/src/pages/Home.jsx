@@ -93,7 +93,7 @@ useGSAP(()=>{
 
 
   return (
-    <div className='relative h-screen overflow-hidden'>
+    <div className='relative h-[100vh] w-[100vw] max-w-[375px] mx-auto overflow-hidden'>
 
       <img className='w-16 absolute top-5 left-5' src="../../public/img/Uber-User-Logo.wine.png" alt="uber-user-logo" />
 
