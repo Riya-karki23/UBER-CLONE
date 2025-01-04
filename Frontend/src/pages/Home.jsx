@@ -7,6 +7,7 @@ import VehiclePanel from '../components/VehiclePanel'
 import ConfirmRidePanel from '../components/ConfirmRidePanel'
 import WaitingForDriver from '../components/WaitingForDriver'
 import LookingForDriver from '../components/LookingForDriver'
+import axios from 'axios';
 
 
 function Home() {
@@ -17,12 +18,70 @@ const [panelOpen,setPanelOpen] = useState(false)
 const [vehiclePanelOpen,setVehiclePanelOpen] = useState(false)
 const [confirmRidePanelOpen,setConfirmRidePanelOpen] = useState(false)
 const [lookingDriverPanel,setLookingDriverPanel] = useState(false)
+const [pickupSuggestions,setPickupSuggestions] = useState([])
+const [destinationSuggestions,setDestinationSuggestions] = useState([])
+const [ activeField, setActiveField ] = useState(null)
+
 
 const panelRef=useRef(null)
 const panelCloseRef=useRef(null)
 const vehiclePanelRef=useRef(null);
 const ConfirmRidePanelRef=useRef(null);
 const LookingForDriverRef=useRef(null);
+
+
+const handlePickupChange=async(e)=>{
+  setPickup(e.target.value)
+
+  try {
+    const response=await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`,{
+      params:{
+        input:e.target.value
+      },
+      headers:{
+        Authorization:`Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+
+    setPickupSuggestions(response.data);
+    console.log(response.data);
+
+    
+    
+  } catch (error) {
+
+    
+  }
+}
+
+
+
+const handleDestinationChange=async(e)=>{
+  setDestination(e.target.value)
+
+  try {
+    const response=await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`,{
+      params:{
+        input:e.target.value
+      },
+      headers:{
+        Authorization:`Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+
+    setDestinationSuggestions(response.data);
+    console.log(response.data);
+
+  } catch (error) {
+
+    
+  }
+}
+
+
+
 
 const submitHandler=(e)=>{
 e.preventDefault();
@@ -103,7 +162,7 @@ useGSAP(()=>{
 
 
     <div className=" flex flex-col justify-end absolute bottom-0  h-screen w-full ">
-      <div className="h-[30%] bg-white p-5 relative">
+      <div className="h-[35%]  p-5 relative bg-white">
         <h5 
         ref={panelCloseRef}
         onClick={()=>{
@@ -119,24 +178,42 @@ useGSAP(()=>{
         <input  
         onClick={()=>{
           setPanelOpen(true)
+          setActiveField('pickup')
         }}
         value={pickup}
         onChange={(e)=>{
-          setPickup(e.target.value)
+        handlePickupChange(e)
         }}
         className='bg-[#eee] px-12 py-2 text-base w-full mt-5 rounded-lg'  type="text" placeholder='Add a pick-up location' />
         <input 
          onClick={()=>{
           setPanelOpen(true)
+          setActiveField('destination')
+
         }}
         value={destination}
         onChange={(e)=>{
-          setDestination(e.target.value)
+          handleDestinationChange(e)
         }} className='bg-[#eee] px-12 py-2 text-base w-full mt-3 rounded-lg' type="text" placeholder='Enter your destination' />
+            <button onClick={
+              ()=>{
+               setVehiclePanelOpen(true);
+                setPanelOpen(false);
+              }
+            }
+            className="bg-black text-white font-semibold rounded-lg w-full mt-5 py-2 ">Find Trip</button>
+
       </form>
       </div>
       <div ref={panelRef} className=" bg-white h-0 ">
-        <LocationSearchPanel setPanelOpen={setPanelOpen} setVehiclePanelOpen={setVehiclePanelOpen}/>
+        <LocationSearchPanel 
+         suggestions={activeField==='pickup'?pickupSuggestions:destinationSuggestions}  
+         setPickup={setPickup} 
+         setDestination={setDestination}
+         setPanelOpen={setPanelOpen}
+         activeField={activeField}
+         />
+         
       </div>
     </div>
 
@@ -152,9 +229,16 @@ useGSAP(()=>{
  <ConfirmRidePanel setLookingDriverPanel={setLookingDriverPanel} setConfirmRidePanelOpen={setConfirmRidePanelOpen}/>
 </div>
 
+
+{/* ----------------------------------------------------------------------------------------------looking for ride panel */}
+
 <div  ref={LookingForDriverRef} className="fixed w-full z-10 bottom-0  bg-white px-3 py-6 translate-y-full">
   <LookingForDriver  setLookingDriverPanel={setLookingDriverPanel}/>
 </div>
+
+
+{/* ----------------------------------------------------------------------------------------------waiting for driver panel */}
+
 <div  className="fixed w-full z-10 bottom-0  translate-y-full bg-white px-3 py-6 ">
   <WaitingForDriver  />
 </div>
